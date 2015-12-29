@@ -1,15 +1,11 @@
 PWD:= .
 
-CC = $(CROSS_COMPILE)gcc
-AR = $(CROSS_COMPILE)ar
+CC := $(CROSS_COMPILE)gcc
+AR ?= $(CROSS_COMPILE)ar
 
 TARGET=	libmcflib.a
 
 CFLAGS= -I$(PWD) -W -Wall -Wshadow -Wstrict-prototypes
-
-ifdef SYSROOT
-  CFLAGS += --sysroot=$(SYSROOT)
-endif
 
 SOURCES=dprc.c \
 	dpaiop.c \
