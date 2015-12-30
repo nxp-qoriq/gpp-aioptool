@@ -1,7 +1,7 @@
 PWD:= .
 
-CC := $(CROSS_COMPILE)gcc
-AR := $(CROSS_COMPILE)ar
+CC ?= $(CROSS_COMPILE)gcc
+AR ?= $(CROSS_COMPILE)ar
 
 TARGET=	libvfio.a
 
