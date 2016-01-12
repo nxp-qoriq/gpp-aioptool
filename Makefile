@@ -11,7 +11,7 @@ $(info "CROSS_COMPILE=$(CROSS_COMPILE)")
 ARCH ?= aarch64
 $(info "ARCH=$(ARCH)")
 
-CC ?= $(CROSS_COMPILE)gcc
+CC := $(CROSS_COMPILE)gcc
 
 # PATHS
 SRCDIR	= src
