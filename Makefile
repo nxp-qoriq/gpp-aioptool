@@ -1,17 +1,22 @@
-top_builddir=$(PWD)
-KERNEL_PATH ?=
-$(info "KERNEL_PATH=$(KERNEL_PATH)")
+top_srcdir=./
+top_builddir=$(top_srcdir)
+LIB   	= $(top_builddir)/lib
+SDKDIR	= /home/shreyansh/build/sdk-devel/ls2-linux/
 
-DESTDIR ?=
-$(info "DESTDIR=$(DESTDIR)")
+# Set tool names
+CROSS_COMPILE=/opt/freescale/tools/gcc-linaro/bin/aarch64-linux-gnu-
+#CROSS_COMPILE=/usr/bin/
+ARCH = aarch64
 
-CROSS_COMPILE ?=
-$(info "CROSS_COMPILE=$(CROSS_COMPILE)")
-
-ARCH ?= aarch64
-$(info "ARCH=$(ARCH)")
-
-CC := $(CROSS_COMPILE)gcc
+CC = $(CROSS_COMPILE)gcc
+AS = $(CROSS_COMPILE)as
+LD = $(CROSS_COMPILE)ld
+CPP = $(CROSS_COMPILE)cpp
+NM = $(CROSS_COMPILE)nm
+STRIP = $(CROSS_COMPILE)strip
+OBJCOPY = $(CROSS_COMPILE)objcopy
+AR = $(CROSS_COMPILE)ar
+RM = rm
 
 # PATHS
 SRCDIR	= src
@@ -19,16 +24,20 @@ SRCS	= $(SRCDIR)/aiop_tool.c $(SRCDIR)/aiop_cmd.c $(SRCDIR)/aiop_tool_dummy.c $(
 BINNAME = aiop_tool
 VFIODIR	= src/vfio
 MCDIR	= flib/mc
+OBJDIR	= objs
 BINDIR	= bin
 
 
 # FLAGS
+#CFLAGS = -g -Wall -v
 CFLAGS = -Wall
 CFLAGS += -I$(top_builddir)/include
 CFLAGS += -I$(top_builddir)/src
 CFLAGS += -I$(top_builddir)/src/vfio
 CFLAGS += -I$(top_builddir)/flib/mc
-CFLAGS += -I$(KERNEL_PATH)
+CFLAGS += -I$(SDKDIR)
+
+LFLAGS +=
 
 #Flags passed on make command line
 CFLAGS += $(CMDFLAGS)
@@ -42,28 +51,26 @@ LFLAGS	+= $(VFIODIR)/libvfio.a
 LFLAGS	+= $(MCDIR)/libmcflib.a
 
 # RULES
+
 all: mcflib vfio $(BINNAME)
 
 execs:   $(EXECS)
 
 mcflib:
-	$(MAKE) -C $(MCDIR) all
+	cd $(MCDIR); $(MAKE); cd -
 
 vfio:
-	$(MAKE) -C $(VFIODIR) all
+	cd $(VFIODIR); $(MAKE); cd -
 
 $(BINNAME): $(OBJS)
 	@mkdir -p $(BINDIR)
 	$(CC) -o $(BINDIR)/$@ $(CFLAGS) $(OBJS) $(LFLAGS)
 
 install: all
-	@mkdir -p $(DESTDIR)/usr/bin
-	cp -ar $(BINDIR)/$(BINNAME) $(DESTDIR)/usr/bin/
 
-.PHONY: vfio mcflib $(BINNAME) install clean
+.PHONY: vfio mcflib $(BINNAME) install
 
 clean:
-	rm -rf $(EXECS) $(OBJS) $(DEPS) $(BINDIR) *.d *.a
-	@for subdir in $(VFIODIR) $(MCDIR); do \
-	     $(MAKE) -C $$subdir clean; \
-	done
+	$(RM) -f $(EXECS) $(OBJS) $(DEPS) $(BINDIR)/$(BINNAME) *.d *.a
+	cd $(VFIODIR); make clean; cd -
+	cd $(MCDIR); make clean; cd -
