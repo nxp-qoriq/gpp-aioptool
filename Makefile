@@ -42,7 +42,7 @@ LFLAGS	+= $(VFIODIR)/libvfio.a
 LFLAGS	+= $(MCDIR)/libmcflib.a
 
 # RULES
-all: $(BINNAME)
+all: mcflib vfio $(BINNAME)
 
 execs:   $(EXECS)
 
@@ -52,7 +52,7 @@ mcflib:
 vfio:
 	$(MAKE) -C $(VFIODIR) all
 
-$(BINNAME): $(OBJS) mcflib vfio
+$(BINNAME): $(OBJS)
 	@mkdir -p $(BINDIR)
 	$(CC) -o $(BINDIR)/$@ $(CFLAGS) $(OBJS) $(LFLAGS)
 
