@@ -637,17 +637,15 @@ perform_dpaiop_load(aiopt_obj_t *obj, void *addr, size_t filesize,
 		}
 		/* Irrespective of error or success, we have to cleanup */
 	}
-	result = ret;
 
 	/* Closing the dpaiop_device, after releasing memory allocated for
 	 * elf
 	 */
 	result = dpaiop_close(dpaiop, 0, *dpaiop_token);
-	AIOPT_DEBUG("MC API dpaiop_close performed. (err=%d)\n", ret);
-	if (ret != 0) {
+	AIOPT_DEBUG("MC API dpaiop_close performed. (err=%d)\n", result);
+	if (result != 0) {
 		AIOPT_DEBUG("MC API dpaiop_close unsuccessful. (err=%d)\n",
-				ret);
-		ret = result;
+				result);
 	}
 	/* Even if result from dpaiop_close was error, still returning positive
 	 * to caller.
@@ -657,6 +655,7 @@ perform_dpaiop_load(aiopt_obj_t *obj, void *addr, size_t filesize,
 	if (dpaiop)
 		free(dpaiop);
 
+	/* Following doesn't return FAILURE if close failed. */
 	if (ret != 0)
 		return AIOPT_FAILURE;
 
