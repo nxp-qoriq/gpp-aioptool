@@ -561,8 +561,8 @@ usage(const char *tool_name, const char *error_str)
 	printf("                         No mandatory arguments.\n");
 	printf("  settod:\n");
 	printf("    -t <Time since Epoch>\n");
-	printf("                         Mandatory: Time, in Seconds since\n");
-	printf("                         Epoch, provided as string\n");
+	printf("                         Mandatory: Time, in milliseconds\n");
+	printf("                         provided as string\n");
 	printf("\n");
 	printf("Arguments valid for all sub-commands:\n");
 	printf("    -g <Container name>  Optional: Name of the container\n");
