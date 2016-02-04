@@ -159,7 +159,7 @@ container_name_from_args(const char *arg)
 		return;
 	}
 
-	strcpy(gvars.container_name, optarg);
+	strcpy(gvars.container_name, arg);
 	gvars.container_name_flag = CONTAINER_USR;
 
 	return;
@@ -534,7 +534,7 @@ usage(const char *tool_name, const char *error_str)
 	/* TODO: Long arguments are missing from this */
 	printf("\n");
 	printf("%s [sub-command] [arguments]\n",
-		bin_name ? basename(bin_name) : NULL);
+		bin_name ? basename(bin_name) : "NULL");
 	printf("Version: %s.%s, Comaptible MC Version: %s\n\n",
 		AIOPT_MAJ_VER, AIOPT_MIN_VER, COMPAT_MC_VER);
 	printf("Following are valid [sub-commands]:\n");

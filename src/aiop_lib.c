@@ -1197,6 +1197,7 @@ aiopt_init(const char *container_name)
 	if (ret != AIOPT_SUCCESS) {
 		/* Unable to initialize */
 		AIOPT_DEBUG("Initialization of AIOP failed.\n");
+		free(obj);
 		return AIOPT_INVALID_HANDLE;
 	}
 

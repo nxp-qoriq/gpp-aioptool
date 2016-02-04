@@ -355,7 +355,7 @@ fsl_vfio_t fsl_vfio_setup(const char *vfio_container)
 	group_name = basename(iommu_group_path);
 	DEBUG("vfio: IOMMU group_name = %s\n", group_name);
 	if (sscanf(group_name, "%d", &groupid) != 1) {
-		ERROR("vfio: error reading %s: %m\n", path);
+		ERROR("vfio: error reading: %s\n", path);
 		goto fail;
 	}
 
@@ -430,7 +430,7 @@ int64_t fsl_vfio_map_mcp_obj(fsl_vfio_t handle, char *mcp_obj)
 
 	if (FSL_VFIO_INVALID_HANDLE == handle) {
 		ERROR("vfio: Incorrect handle passed.\n");
-		goto mcp_failure;
+		goto failure;
 	}
 
 	group = (struct vfio_group *)handle;
@@ -466,7 +466,7 @@ int64_t fsl_vfio_map_mcp_obj(fsl_vfio_t handle, char *mcp_obj)
 
 mcp_failure:
 	close(mcp_fd);
-
+failure:
 	return v_addr;
 }
 

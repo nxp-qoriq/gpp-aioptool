@@ -336,6 +336,10 @@ int main(int argc, char **argv)
 
 	/* Fetch Operation Handler */
 	op = get_ops_handler(conf.command);
+	if (!op) {
+		AIOPT_ERR("Incorrect or unhandled command.\n");
+		return AIOPT_FAILURE;
+	}
 	
 #ifndef AIOP_CMDSYS_UNIT_TEST /* If not command line sub-sys unit testing */
 
