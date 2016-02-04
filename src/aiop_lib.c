@@ -1038,19 +1038,16 @@ aiopt_reset(aiopt_handle_t handle)
 	/* Closing the dpaiop_device */
 	result = dpaiop_close(dpaiop, 0, *dpaiop_token);
 	AIOPT_DEBUG("MC API dpaiop_close performed. (err=%d)\n", ret);
-	if (ret != 0) {
+	if (result != 0) {
 		AIOPT_DEBUG("MC API dpaiop_close unsuccessful. (err=%d)\n",
-				ret);
-		/* In case of failure to close, error is returned, else error
-		 * as reported by previous calls is returned.
-		 */
-		ret = result;
+				result);
 	}
 
 	/* Releasing memory for dpaiop object */
 	if (dpaiop)
 		free(dpaiop);
 
+	/* Following doesn't return FAILURE if close fails */
 	if (ret != 0)
 		return AIOPT_FAILURE;
 
