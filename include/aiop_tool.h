@@ -43,6 +43,7 @@ struct aiop_tool_conf {
 	char		*command; /**< Sub-command provided on cmd line >*/
 	char		*container; /**< Container Name string >*/
 	char		*image_file; /**< AIOP Image file for Load command >*/
+	char		*args_file; /**< AIOP Arguments file for Load command >*/
 	unsigned short int reset_flag; /**< Reset option for Load command >*/
 	unsigned short int debug_flag; /**< DEBUG Output, DEBUG/DEV >*/
 	unsigned short int verbose_flag; /**< verbose Output, INFO >*/

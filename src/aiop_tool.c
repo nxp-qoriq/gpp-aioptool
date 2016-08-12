@@ -109,6 +109,7 @@ create_conf_inst(aiopt_conf_t *h)
 	h->command = sub_cmd_name;
 	h->container = gvars.container_name;
 	h->image_file = gvars.image_file;
+	h->args_file = gvars.args_file;
 	h->reset_flag = gvars.reset_flag;
 	h->debug_flag = gvars.debug_flag;
 	h->verbose_flag = gvars.verbose_flag;
@@ -174,13 +175,13 @@ perform_aiop_load(aiopt_handle_t handle, aiopt_conf_t *conf)
 	int ret;
 	AIOPT_DEV("Entering\n");
 
-	ret = aiopt_load(handle, conf->image_file, conf->reset_flag);
+	ret = aiopt_load(handle, conf->image_file, conf->args_file, conf->reset_flag);
 	if (ret == AIOPT_SUCCESS) {
-		AIOPT_PRINT("AIOP Image (%s) loaded successfully.\n",
-			conf->image_file);
+		AIOPT_PRINT("AIOP Image (%s) with args (%s) loaded successfully.\n",
+			conf->image_file, conf->args_file);
 	} else {
-		AIOPT_PRINT("AIOP Image (%s) loading failed. (err=%d)\n",
-			conf->image_file, ret);
+		AIOPT_PRINT("AIOP Image (%s) with args (%s) loading failed. (err=%d)\n",
+			conf->image_file, conf->args_file, ret);
 	}
 
 	AIOPT_DEV("Exiting (%d)\n", ret);

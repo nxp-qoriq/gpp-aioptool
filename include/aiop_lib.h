@@ -37,6 +37,13 @@
 #define MAX_AIOP_IMAGE_FILE_SZ	(8 * 1024 * 1024) /**< 8 MB max size of AIOP
 							image file >*/
 
+/** @def MAX_AIOP_ARGS_FILE_SZ
+ * @breif Maximum size of an AIOP Arguments
+ *
+ */
+#define MAX_AIOP_ARGS_FILE_SZ	(512) /**< 512 Bytes >*/
+
+
 /** @def AIOPT_INVALID_HANDLE
  * @brief Invalid AIOPT Handle
  */
@@ -132,7 +139,8 @@ int aiopt_deinit(aiopt_handle_t obj);
  *
  * @return AIOPT_SUCCESS or AIOPT_FAILURE
  */
-int aiopt_load(aiopt_handle_t handle, const char *ifile, short int reset);
+int aiopt_load(aiopt_handle_t handle, const char *ifile,
+			const char *afile, short int reset);
 
 /*
  * @brief

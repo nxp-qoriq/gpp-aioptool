@@ -542,6 +542,55 @@ get_aiop_image_fd(const char *ifile, size_t *file_sz)
 
 /*
  * @brief
+ * For a given AIOP Args file, verify existence, type and return FD after
+ * opening it.
+ *
+ * @param [in] afile AIOP ELF File name with path
+ * @param [out] file_sz size of ELF file, if valid
+ *
+ * @return Value greater than 0 if file opened successfully or AIOPT_FAILURE
+ */
+static int
+get_aiop_args_fd(const char *afile, size_t *file_sz)
+{
+	int fd = -1;
+	size_t filesize = 0;
+	struct stat im_stat;
+
+	AIOPT_DEV("Entering.\n");
+	memset(&im_stat, 0, sizeof(im_stat));
+	*file_sz = 0;
+
+	/* Checking Validity of the file */
+	if (!afile || (stat(afile, &im_stat) != 0)) {
+		AIOPT_DEBUG("Unable to stat the file (%s).\n", afile);
+		return AIOPT_FAILURE;
+	}
+
+	/* get the file size */
+	filesize = im_stat.st_size;
+	if (filesize <= 0 || filesize > MAX_AIOP_ARGS_FILE_SZ) {
+		AIOPT_DEBUG("Incorrect file size. Give (%lu), Max Allowed (%d)"
+				".\n", filesize, MAX_AIOP_ARGS_FILE_SZ);
+		return AIOPT_FAILURE;
+	}
+
+	/* Opening the file */
+	fd = open(afile, O_RDONLY);
+	if (fd < 0) {
+		AIOPT_DEBUG("Failed to open AIOP arguments file (%s).\n", afile);
+		return AIOPT_FAILURE;
+	}
+
+	*file_sz = filesize;
+
+	AIOPT_DEBUG("AIOP Args File opened Successfully (fd=%d).\n", fd);
+	AIOPT_DEV("Exiting.\n");
+
+	return fd;
+}
+/*
+ * @brief
  * Internal operation interfacing with flib/mc APIs for dpaiop_load/dpaiop_run
  * This operation should _not_ be called directly - it is wrapped around by
  * aiopt_load()
@@ -556,6 +605,7 @@ get_aiop_image_fd(const char *ifile, size_t *file_sz)
  */
 static int
 perform_dpaiop_load(aiopt_obj_t *obj, void *addr, size_t filesize,
+			void *args_addr, size_t args_size,
 			short int reset)
 {
 	int ret, result;
@@ -623,8 +673,8 @@ perform_dpaiop_load(aiopt_obj_t *obj, void *addr, size_t filesize,
 		/* Preparing arguments for run */
 		run_cfg.cores_mask = AIOPT_RUN_CORES_ALL;
 		run_cfg.options = 0;
-		run_cfg.args_iova = 0;
-		run_cfg.args_size = 0;
+		run_cfg.args_iova = (uint64_t)args_addr;
+		run_cfg.args_size = args_size;
 	
 		/* Calling dpaiop_run */
 		ret = dpaiop_run(dpaiop, 0, *dpaiop_token, &run_cfg);
@@ -1061,18 +1111,23 @@ aiopt_reset(aiopt_handle_t handle)
  *
  * @param [in] handle aiopt_handle_t type valid object
  * @param [in] ifile AIOP Image file name, with path
+ * @param [in] afile AIOP Commandline arguments file name, with path
  * @param [in] reset Flag to state if reset is to be done before load operation
  *
  * @return AIOPT_SUCCESS or AIOPT_FAILURE
  */
 int
-aiopt_load(aiopt_handle_t handle, const char *ifile, short int reset)
+aiopt_load(aiopt_handle_t handle, const char *ifile, const char *afile, short int reset)
 {
 	int ret, fd;
 	size_t filesize = 0;
 	size_t aligned_size = 0;
 	void *addr = NULL;
 	aiopt_obj_t *obj = NULL;
+	int args_fd;
+	size_t args_filesize = 0;
+	size_t args_aligned_size = 0;
+	void *args_addr = NULL;
 
 	/* Get the FD of the AIOP Image file after opening it. Failure to open
 	 * is an error.
@@ -1084,6 +1139,16 @@ aiopt_load(aiopt_handle_t handle, const char *ifile, short int reset)
 		goto err_out;
 	}
 	AIOPT_LIB_INFO("AIOP Image file opened: (fd=%d).\n", fd);
+
+	if (afile) {
+		args_fd = get_aiop_args_fd(afile, &args_filesize);
+		if (args_fd <= 0 ) { /* Including AIOPT_FAILURE */
+			AIOPT_DEBUG("Unable to open AIOP Arguments File.\n");
+			ret = AIOPT_FAILURE;
+			goto err_out;
+		}
+		AIOPT_LIB_INFO("AIOP Arguments file opened: (fd=%d).\n", args_fd);
+	}
 
 	/* Allocating memory in virtual space and dma-mapping it for loading
 	 * AIOP Image on it
@@ -1099,9 +1164,29 @@ aiopt_load(aiopt_handle_t handle, const char *ifile, short int reset)
 		ret = AIOPT_ENOMEM;
 		goto err_out;
 	}
-		
+
 	AIOPT_DEV("mmap-ing (%ld) bytes of aligned buffer for AIOP "
 			"image. (addr=%p)\n", aligned_size, addr);
+
+	if (afile) {
+		/* Allocating memory in virtual space and dma-mapping it for loading
+		 * AIOP arguments on it
+		 */
+		args_aligned_size =
+			((args_filesize + AIOPT_ALIGNED_PAGE_SZ)/AIOPT_ALIGNED_PAGE_SZ) \
+			* AIOPT_ALIGNED_PAGE_SZ;
+		args_addr = mmap(NULL, args_aligned_size, PROT_READ|PROT_WRITE,
+				MAP_PRIVATE|MAP_POPULATE, args_fd, 0);
+		if (args_addr == MAP_FAILED) {
+			AIOPT_DEBUG("Unable to mmap internal memory. (err=%d)\n",
+					errno);
+			ret = AIOPT_ENOMEM;
+			goto err_out;
+		}
+	
+		AIOPT_DEV("mmap-ing (%ld) bytes of aligned buffer for AIOP "
+			"arguments. (addr=%p)\n", args_aligned_size, args_addr);
+	}
 
 	/* After memory allocation, dma-mapping the memory through VFIO API */
 	obj = (aiopt_obj_t *)handle;
@@ -1113,7 +1198,19 @@ aiopt_load(aiopt_handle_t handle, const char *ifile, short int reset)
 	}
 	AIOPT_LIB_INFO("DMA Map of allocated memory (%p) successful.\n", addr);
 
-	ret = perform_dpaiop_load(obj, addr, filesize, reset);
+	if (afile) {
+		/* After memory allocation for args, dma-mapping the memory through VFIO API */
+		obj = (aiopt_obj_t *)handle;
+		ret = fsl_vfio_setup_dmamap(obj->vfio_handle, (uint64_t)args_addr,
+						args_aligned_size);
+		if (ret != VFIO_SUCCESS) {
+			AIOPT_DEBUG("Unable to perform DMA Mapping for args. (err=%d)\n", ret);
+			goto err_cleanup0;
+		}
+		AIOPT_LIB_INFO("DMA Map of allocated memory (%p) successful for args.\n", args_addr);
+	}
+
+	ret = perform_dpaiop_load(obj, addr, filesize, args_addr, args_filesize, reset);
 	if (ret != AIOPT_SUCCESS) {
 		AIOPT_DEBUG("Error in performing aiop load.\n");
 		/* Fall through to err_cleanup */
@@ -1121,12 +1218,22 @@ aiopt_load(aiopt_handle_t handle, const char *ifile, short int reset)
 	}
 
 err_cleanup:
+	if (afile && args_addr && args_aligned_size > 0)
+		fsl_vfio_destroy_dmamap(obj->vfio_handle,
+					(uint64_t)args_addr,
+					args_aligned_size);
+
+err_cleanup0:
 	if (addr && aligned_size > 0)
 		fsl_vfio_destroy_dmamap(obj->vfio_handle,
 					(uint64_t)addr,
 					aligned_size);
 
 err_out:
+	if (args_addr)
+		munmap(args_addr, args_filesize);
+	if (args_fd > 0)
+		close(args_fd);
 	if (addr)
 		munmap(addr, filesize);
 	if (fd > 0)

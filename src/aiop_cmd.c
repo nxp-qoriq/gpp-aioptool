@@ -230,6 +230,71 @@ error_out:
 
 /*
  * @brief
+ * Helper to extract the name of file containing AIOP command-line argument data
+ * from argument list
+ *
+ * @param [in] file string passed as argument by user, against -a option
+ * @return AIOPT_SUCCESS if string can be extracted, else AIOPT_FAILURE.
+ *         In case of incorrect usage (invalid/NULL arguments), AIOPT_FAILURE
+ *         is returned.
+ */
+static inline int
+args_file_from_args(const char *file)
+{
+	int ret = AIOPT_SUCCESS;
+	int file_len;
+	struct stat file_s;
+
+	if (!file) {
+		/* Possible internal error; Caller has to assure non-NULL string
+		 * is passed.*/
+		AIOPT_DEV("Invalid API usage.\n");
+		AIOPT_DEBUG("Internal error.\n");
+		goto error_out;
+	}
+
+	file_len = strlen(file);
+	if (file_len <= 0 || file_len > FILENAME_MAX) {
+		AIOPT_ERR("Filename provided longer than allowed.\n");
+		goto error_out;
+	}
+
+	AIOPT_DEV("File recieved from Args = %s\n", file);
+
+	/* Validate that file is correct */
+	ret = access(file, F_OK|R_OK);
+	if (ret != 0) {
+		AIOPT_ERR("Unable to access file path (err=%d)\n", errno);
+		goto error_out;
+	}
+
+	/* Access to file is OK; Checking if a Regular file or not */
+	memset(&file_s, 0, sizeof(file_s));
+	ret = stat(file, &file_s);
+	if (ret != 0) {
+		AIOPT_ERR("Unable to stat file. (err=%d)\n", errno);
+		goto error_out;
+	}
+
+	/* XXX; access and stat can be merged into stat call */
+	ret = S_ISREG(file_s.st_mode);
+	if (!ret) {
+		AIOPT_ERR("Image file is not a regular file\n");
+		goto error_out;
+	}
+
+	strcpy(gvars.args_file, file);
+	gvars.args_file_flag = TRUE;
+
+	return AIOPT_SUCCESS;
+
+error_out:
+	return AIOPT_FAILURE;
+}
+
+
+/*
+ * @brief
  * Helper to extract/update reset flag against argument -r passed by user
  *
  * @param void
@@ -388,11 +453,12 @@ generic_cmd_hndlr(int argc, char **argv, char *invalid_args)
 {
 	int ret = AIOPT_SUCCESS;
 	int opt;
-	char *opt_str = "+g:f:t:rdv";
+	char *opt_str = "+g:f:a:t:rdv";
 
 	static struct option longopts[] = {
 		{"container", required_argument, NULL, 'g'},
 		{"file", required_argument, NULL, 'f'},
+		{"args", required_argument, NULL, 'a'},
 		{"reset", no_argument, NULL, 'r'},
 		{"timeofday", required_argument, NULL, 't'},
 		{"debug", no_argument, NULL, 'd'},
@@ -433,6 +499,19 @@ generic_cmd_hndlr(int argc, char **argv, char *invalid_args)
 			ret = image_file_from_args(optarg);
 			if (ret != AIOPT_SUCCESS) {
 				AIOPT_ERR("Unable to validate image file.\n");
+			}
+			break;
+		case 'a':
+			ret = check_if_valid_arg(invalid_args,'a');
+			if (ret != AIOPT_SUCCESS) {
+				AIOPT_ERR("Invalid arg (%c) provided\n", 'a');
+				break;
+			}
+
+			AIOPT_DEV("Provided with 'a' -%s-\n", optarg);
+			ret = args_file_from_args(optarg);
+			if (ret != AIOPT_SUCCESS) {
+				AIOPT_ERR("Unable to validate args file.\n");
 			}
 			break;
 		case 'r':
@@ -552,6 +631,8 @@ usage(const char *tool_name, const char *error_str)
 	printf("  load:\n");
 	printf("    -f <AIOP Image Path> Mandatory: Path of a valid AIOP \n");
 	printf("                         image file.\n");
+	printf("    -a <AIOP Args Path>  Optional: Path of a valid file \n");
+	printf("                         containing AIOP command-line argument data\n");
 	printf("    -r                   Optional: Reset AIOP tile before\n");
 	printf("                         performing load. If not provided,\n");
 	printf("                         reset would not be done\n");
@@ -691,7 +772,7 @@ int
 load_cmd_hndlr(int argc, char **argv)
 {
 	int ret = AIOPT_SUCCESS;
-	char *valid_args = "gfrdv";
+	char *valid_args = "gafrdv";
 
 	AIOPT_DEBUG("Load Cmd: argc=%d\n", argc);
 

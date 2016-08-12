@@ -89,6 +89,12 @@ struct global_args {
 	short int image_file_flag;
 	char image_file[MAX_PATH_LEN]; /* TODO Make it dynamic allocation */
 
+	/* Name (with path) of the AIOP arguments file.
+	 * MAX_PATH_LEN is small enough for static allocation.
+ 	*/
+	short int args_file_flag;
+	char args_file[MAX_PATH_LEN]; /* TODO Make it dynamic allocation */
+
 	/* Name of the container containing dpaiop object. This would be updated
 	 * either through user provided value (-g argument), or environment 
 	 * variable (DPRC) or default value specified in DEFAULT_DPRC_NAME
