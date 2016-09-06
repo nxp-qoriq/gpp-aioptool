@@ -89,11 +89,13 @@ dump_cmdline_args(void)
 	AIOPT_INFO(" Using: \n"
 		"    Container Name: %s\n"
 		"    Image File: %s\n"
+		"    Args File: %s\n"
 		"    Time of Day: %lu\n"
 		"    Reset Flag: %s\n"
 		"    Debug: %s\n",
 		gvars.container_name ? gvars.container_name : NULL,
 		gvars.image_file ? gvars.image_file : NULL,
+		gvars.args_file ? gvars.args_file : NULL,
 		gvars.tod_val,
 		gvars.reset_flag ? "Yes" : "No",
 		gvars.debug_flag ? "Yes" : "No");
@@ -177,7 +179,7 @@ container_name_from_args(const char *arg)
 static inline int
 image_file_from_args(const char *file)
 {
-	int ret = AIOPT_SUCCESS;
+	int ret;
 	int file_len;
 	struct stat file_s;
 
@@ -190,7 +192,7 @@ image_file_from_args(const char *file)
 	}
 
 	file_len = strlen(file);
-	if (file_len <= 0 || file_len > FILENAME_MAX) {
+	if (file_len <= 0 || file_len > MAX_PATH_LEN) {
 		AIOPT_ERR("Filename provided longer than allowed.\n");
 		goto error_out;
 	}
@@ -233,19 +235,19 @@ error_out:
  * Helper to extract the name of file containing AIOP command-line argument data
  * from argument list
  *
- * @param [in] file string passed as argument by user, against -a option
+ * @param [in] args file string passed as argument by user, against -a option
  * @return AIOPT_SUCCESS if string can be extracted, else AIOPT_FAILURE.
  *         In case of incorrect usage (invalid/NULL arguments), AIOPT_FAILURE
  *         is returned.
  */
 static inline int
-args_file_from_args(const char *file)
+args_file_from_args(const char *args_file)
 {
-	int ret = AIOPT_SUCCESS;
+	int ret;
 	int file_len;
 	struct stat file_s;
 
-	if (!file) {
+	if (!args_file) {
 		/* Possible internal error; Caller has to assure non-NULL string
 		 * is passed.*/
 		AIOPT_DEV("Invalid API usage.\n");
@@ -253,37 +255,37 @@ args_file_from_args(const char *file)
 		goto error_out;
 	}
 
-	file_len = strlen(file);
-	if (file_len <= 0 || file_len > FILENAME_MAX) {
+	file_len = strlen(args_file);
+	if (file_len <= 0 || file_len > MAX_PATH_LEN) {
 		AIOPT_ERR("Filename provided longer than allowed.\n");
 		goto error_out;
 	}
 
-	AIOPT_DEV("File recieved from Args = %s\n", file);
+	AIOPT_DEV("File recieved from Args = %s\n", args_file);
 
 	/* Validate that file is correct */
-	ret = access(file, F_OK|R_OK);
+	ret = access(args_file, F_OK|R_OK);
 	if (ret != 0) {
-		AIOPT_ERR("Unable to access file path (err=%d)\n", errno);
+		AIOPT_ERR("Unable to access args file path (err=%d)\n", errno);
 		goto error_out;
 	}
 
-	/* Access to file is OK; Checking if a Regular file or not */
+	/* Access to file is OK; Checking if a regular file or not */
 	memset(&file_s, 0, sizeof(file_s));
-	ret = stat(file, &file_s);
+	ret = stat(args_file, &file_s);
 	if (ret != 0) {
-		AIOPT_ERR("Unable to stat file. (err=%d)\n", errno);
+		AIOPT_ERR("Unable to stat args file. (err=%d)\n", errno);
 		goto error_out;
 	}
 
 	/* XXX; access and stat can be merged into stat call */
 	ret = S_ISREG(file_s.st_mode);
 	if (!ret) {
-		AIOPT_ERR("Image file is not a regular file\n");
+		AIOPT_ERR("Args file is not a regular file\n");
 		goto error_out;
 	}
 
-	strcpy(gvars.args_file, file);
+	strcpy(gvars.args_file, args_file);
 	gvars.args_file_flag = TRUE;
 
 	return AIOPT_SUCCESS;
@@ -458,7 +460,7 @@ generic_cmd_hndlr(int argc, char **argv, char *invalid_args)
 	static struct option longopts[] = {
 		{"container", required_argument, NULL, 'g'},
 		{"file", required_argument, NULL, 'f'},
-		{"args", required_argument, NULL, 'a'},
+		{"args-file", required_argument, NULL, 'a'},
 		{"reset", no_argument, NULL, 'r'},
 		{"timeofday", required_argument, NULL, 't'},
 		{"debug", no_argument, NULL, 'd'},

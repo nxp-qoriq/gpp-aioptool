@@ -45,7 +45,7 @@
 /* @def AIOPT_RUN_CORES_ALL
  * @brief Mask for defining cores on which AIOP Tile has to be kicked
  */
-#define AIOPT_RUN_CORES_ALL		0xFFFFFFFF
+#define AIOPT_RUN_CORES_ALL		0xFFFF
 
 /*=========================================================================
  * Internal Functions
@@ -545,7 +545,7 @@ get_aiop_image_fd(const char *ifile, size_t *file_sz)
  * For a given AIOP Args file, verify existence, type and return FD after
  * opening it.
  *
- * @param [in] afile AIOP ELF File name with path
+ * @param [in]  afile AIOP args file name with path
  * @param [out] file_sz size of ELF file, if valid
  *
  * @return Value greater than 0 if file opened successfully or AIOPT_FAILURE
@@ -605,7 +605,7 @@ get_aiop_args_fd(const char *afile, size_t *file_sz)
  */
 static int
 perform_dpaiop_load(aiopt_obj_t *obj, void *addr, size_t filesize,
-			void *args_addr, size_t args_size,
+			void *args_addr, size_t args_filesize,
 			short int reset)
 {
 	int ret, result;
@@ -674,7 +674,7 @@ perform_dpaiop_load(aiopt_obj_t *obj, void *addr, size_t filesize,
 		run_cfg.cores_mask = AIOPT_RUN_CORES_ALL;
 		run_cfg.options = 0;
 		run_cfg.args_iova = (uint64_t)args_addr;
-		run_cfg.args_size = args_size;
+		run_cfg.args_size = args_filesize;
 	
 		/* Calling dpaiop_run */
 		ret = dpaiop_run(dpaiop, 0, *dpaiop_token, &run_cfg);
@@ -1205,7 +1205,7 @@ aiopt_load(aiopt_handle_t handle, const char *ifile, const char *afile, short in
 						args_aligned_size);
 		if (ret != VFIO_SUCCESS) {
 			AIOPT_DEBUG("Unable to perform DMA Mapping for args. (err=%d)\n", ret);
-			goto err_cleanup0;
+			goto err_cleanup_elf;
 		}
 		AIOPT_LIB_INFO("DMA Map of allocated memory (%p) successful for args.\n", args_addr);
 	}
@@ -1214,16 +1214,16 @@ aiopt_load(aiopt_handle_t handle, const char *ifile, const char *afile, short in
 	if (ret != AIOPT_SUCCESS) {
 		AIOPT_DEBUG("Error in performing aiop load.\n");
 		/* Fall through to err_cleanup */
-		goto err_cleanup;
+		goto err_cleanup_args;
 	}
 
-err_cleanup:
+err_cleanup_args:
 	if (afile && args_addr && args_aligned_size > 0)
 		fsl_vfio_destroy_dmamap(obj->vfio_handle,
 					(uint64_t)args_addr,
 					args_aligned_size);
 
-err_cleanup0:
+err_cleanup_elf:
 	if (addr && aligned_size > 0)
 		fsl_vfio_destroy_dmamap(obj->vfio_handle,
 					(uint64_t)addr,
