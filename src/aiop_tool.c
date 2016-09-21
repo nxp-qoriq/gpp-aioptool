@@ -110,7 +110,7 @@ create_conf_inst(aiopt_conf_t *h)
 	h->command = sub_cmd_name;
 	h->container = gvars.container_name;
 	h->image_file = gvars.image_file;
-	h->args_file = gvars.args_file;
+	h->args_file = gvars.args_file[0]?gvars.args_file:NULL;
 	h->reset_flag = gvars.reset_flag;
 	h->debug_flag = gvars.debug_flag;
 	h->verbose_flag = gvars.verbose_flag;

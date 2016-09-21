@@ -95,7 +95,7 @@ dump_cmdline_args(void)
 		"    Debug: %s\n",
 		gvars.container_name ? gvars.container_name : NULL,
 		gvars.image_file ? gvars.image_file : NULL,
-		gvars.args_file ? gvars.args_file : NULL,
+		gvars.args_file,
 		gvars.tod_val,
 		gvars.reset_flag ? "Yes" : "No",
 		gvars.debug_flag ? "Yes" : "No");
