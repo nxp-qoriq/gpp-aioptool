@@ -1153,9 +1153,12 @@ aiopt_load(aiopt_handle_t handle, const char *ifile, const char *afile, short in
 	/* Allocating memory in virtual space and dma-mapping it for loading
 	 * AIOP Image on it
 	 */
-	aligned_size =
-		((filesize + AIOPT_ALIGNED_PAGE_SZ)/AIOPT_ALIGNED_PAGE_SZ) \
-		* AIOPT_ALIGNED_PAGE_SZ;
+	if (filesize % AIOPT_ALIGNED_PAGE_SZ)
+		aligned_size = ((filesize + AIOPT_ALIGNED_PAGE_SZ)/
+				AIOPT_ALIGNED_PAGE_SZ) * AIOPT_ALIGNED_PAGE_SZ;
+	else
+		aligned_size = filesize;
+
 	addr = mmap(NULL, aligned_size, PROT_READ|PROT_WRITE,
 			MAP_PRIVATE|MAP_POPULATE, fd, 0);
 	if (addr == MAP_FAILED) {
