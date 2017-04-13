@@ -342,7 +342,7 @@ init_aiop(aiopt_obj_t *obj)
 	int *hw_id;
 	unsigned short int *token;
 	struct fsl_mc_io *dpaiop = NULL;
-	struct dpaiop_attr attr;
+	struct dpaiop_sl_version sl_version = {0};
 
 	AIOPT_DEV("Entering.\n");
 
@@ -372,15 +372,19 @@ init_aiop(aiopt_obj_t *obj)
 		goto err;
 	}
 
-	/* Get the device attributes if device is open */
-	ret = dpaiop_get_attributes(dpaiop, CMD_PRI_LOW, *token, &attr);
+	/* Get the device version */
+	ret = dpaiop_get_sl_version(dpaiop, CMD_PRI_LOW, *token, &sl_version);
 	if (ret != 0) {
-		AIOPT_DEBUG("Reading device failed with err code: %d", ret);
+		AIOPT_DEV("Unable to get AIOP Version information: %d.\n",
+			ret);
+		/* This is not considered an error */
+		AIOPT_DEV("Attributes: id=%d, v.major=-NA-, v.minor=-NA-.\n",
+			*hw_id);
 	} else {
 		AIOPT_DEV("Attributes: id=%d, v.major=%d, v.minor=%d.\n",
-			attr.id, attr.version.major, attr.version.minor);
-		AIOPT_LIB_INFO("Successfully initialized the AIOP device.\n");
+			*hw_id, sl_version.major, sl_version.minor);
 	}
+	AIOPT_LIB_INFO("Successfully initialized the AIOP device.\n");
 
 	/* Close the device */
 	ret_2 = dpaiop_close(dpaiop, CMD_PRI_LOW, *token);
@@ -931,7 +935,6 @@ aiopt_status(aiopt_handle_t handle, aiopt_status_t *s)
 	aiopt_obj_t *obj = NULL;
 	unsigned short int *dpaiop_token;
 	struct dpaiop_sl_version dpaiop_slv = {0};
-	struct dpaiop_attr dpaiop_attr = {0};
 
 	struct fsl_mc_io *dpaiop = NULL;
 
@@ -963,27 +966,6 @@ aiopt_status(aiopt_handle_t handle, aiopt_status_t *s)
 	}
 	AIOPT_LIB_INFO("Opened AIOP device. (Token=%d)\n", *dpaiop_token);
 
-	/* One call to dpaiop_get_attributes was performed during AIOP init.
-	 * Multiple calls are being made in case some parallel operation
-	 * (parallel to execution cycle of this binary) changes the AIOP
-	 * Image on Tile (through very less probability as this is run-to-comp
-	 */
-	ret = dpaiop_get_attributes(dpaiop, 0, *dpaiop_token, &dpaiop_attr);
-	if (ret) {
-		AIOPT_DEBUG("Unable to fetch AIOP Attributes. "
-				"(err=%d)\n", ret);
-		goto close_aiop;
-	} else {
-		AIOPT_LIB_INFO("Obtained Attributes. major=%d, minor=%d, "
-				"id=%d\n",
-				dpaiop_attr.version.major,
-				dpaiop_attr.version.minor,
-				dpaiop_attr.id);
-		s->major_v = dpaiop_attr.version.major;
-		s->minor_v = dpaiop_attr.version.minor;
-		s->id = dpaiop_attr.id;
-	}
-
 	/* Getting the Service Layer Version information */
 	ret = dpaiop_get_sl_version(dpaiop, 0, *dpaiop_token, &dpaiop_slv);
 	if (ret) {
@@ -991,7 +973,7 @@ aiopt_status(aiopt_handle_t handle, aiopt_status_t *s)
 				"(err=%d)\n", ret);
 		goto close_aiop;
 	} else {
-		AIOPT_DEBUG("Obtained sl_version. major=%d, minor=%d, rev=%d\n",
+		AIOPT_DEBUG("AIOP SL Attributes: major=%d, minor=%d, rev=%d\n",
 				dpaiop_slv.major, dpaiop_slv.minor,
 				dpaiop_slv.revision);
 		s->sl_major_v = dpaiop_slv.major;

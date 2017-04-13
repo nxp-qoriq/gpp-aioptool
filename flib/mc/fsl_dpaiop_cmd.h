@@ -1,4 +1,4 @@
-/* Copyright 2013-2015 Freescale Semiconductor Inc.
+/* Copyright 2013-2016 Freescale Semiconductor Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,33 +33,32 @@
 #define _FSL_DPAIOP_CMD_H
 
 /* DPAIOP Version */
-#define DPAIOP_VER_MAJOR				1
-#define DPAIOP_VER_MINOR				1
+#define DPAIOP_VER_MAJOR				2
+#define DPAIOP_VER_MINOR				3
 
 /* Command IDs */
-#define DPAIOP_CMDID_CLOSE				0x800
-#define DPAIOP_CMDID_OPEN				0x80a
-#define DPAIOP_CMDID_CREATE				0x90a
-#define DPAIOP_CMDID_DESTROY				0x900
+#define DPAIOP_CMDID_CLOSE                      0x8001
+#define DPAIOP_CMDID_OPEN                       0x80a1
+#define DPAIOP_CMDID_CREATE                     0x90a1
+#define DPAIOP_CMDID_DESTROY                    0x98a1
+#define DPAIOP_CMDID_GET_API_VERSION            0xa0a1
 
-#define DPAIOP_CMDID_GET_ATTR				0x004
-#define DPAIOP_CMDID_RESET				0x005
+#define DPAIOP_CMDID_GET_ATTR                   0x0041
+#define DPAIOP_CMDID_RESET                      0x0051
 
-#define DPAIOP_CMDID_SET_IRQ				0x010
-#define DPAIOP_CMDID_GET_IRQ				0x011
-#define DPAIOP_CMDID_SET_IRQ_ENABLE			0x012
-#define DPAIOP_CMDID_GET_IRQ_ENABLE			0x013
-#define DPAIOP_CMDID_SET_IRQ_MASK			0x014
-#define DPAIOP_CMDID_GET_IRQ_MASK			0x015
-#define DPAIOP_CMDID_GET_IRQ_STATUS			0x016
-#define DPAIOP_CMDID_CLEAR_IRQ_STATUS		0x017
+#define DPAIOP_CMDID_SET_IRQ_ENABLE             0x0121
+#define DPAIOP_CMDID_GET_IRQ_ENABLE             0x0131
+#define DPAIOP_CMDID_SET_IRQ_MASK               0x0141
+#define DPAIOP_CMDID_GET_IRQ_MASK               0x0151
+#define DPAIOP_CMDID_GET_IRQ_STATUS             0x0161
+#define DPAIOP_CMDID_CLEAR_IRQ_STATUS           0x0171
 
-#define DPAIOP_CMDID_LOAD					0x280
-#define DPAIOP_CMDID_RUN					0x281
-#define DPAIOP_CMDID_GET_SL_VERSION			0x282
-#define DPAIOP_CMDID_GET_STATE				0x283
-#define DPAIOP_CMDID_SET_TIME_OF_DAY		0x284
-#define DPAIOP_CMDID_GET_TIME_OF_DAY		0x285
+#define DPAIOP_CMDID_LOAD                       0x2802
+#define DPAIOP_CMDID_RUN                        0x2811
+#define DPAIOP_CMDID_GET_SL_VERSION             0x2821
+#define DPAIOP_CMDID_GET_STATE                  0x2831
+#define DPAIOP_CMDID_SET_TIME_OF_DAY            0x2841
+#define DPAIOP_CMDID_GET_TIME_OF_DAY            0x2851
 
 /*                cmd, param, offset, width, type, arg_name */
 #define DPAIOP_CMD_OPEN(cmd, dpaiop_id) \
@@ -70,28 +69,6 @@
 do { \
 	MC_CMD_OP(cmd, 0, 0,  32, int,	    cfg->aiop_id);\
 	MC_CMD_OP(cmd, 0, 32, 32, int,	    cfg->aiop_container_id);\
-} while (0)
-
-/*                cmd, param, offset, width, type, arg_name */
-#define DPAIOP_CMD_SET_IRQ(cmd, irq_index, irq_cfg) \
-do { \
-	MC_CMD_OP(cmd, 0, 0,  8,  uint8_t,  irq_index);\
-	MC_CMD_OP(cmd, 0, 32, 32, uint32_t, irq_cfg->val);\
-	MC_CMD_OP(cmd, 1, 0,  64, uint64_t, irq_cfg->addr); \
-	MC_CMD_OP(cmd, 2, 0,  32, int,	    irq_cfg->user_irq_id); \
-} while (0)
-
-/*                cmd, param, offset, width, type, arg_name */
-#define DPAIOP_CMD_GET_IRQ(cmd, irq_index) \
-	MC_CMD_OP(cmd, 0, 32, 8,  uint8_t,  irq_index)
-
-/*                cmd, param, offset, width, type, arg_name */
-#define DPAIOP_RSP_GET_IRQ(cmd, type, irq_cfg) \
-do { \
-	MC_RSP_OP(cmd, 0, 0,  32, uint32_t, irq_cfg->val); \
-	MC_RSP_OP(cmd, 1, 0,  64, uint64_t, irq_cfg->addr); \
-	MC_RSP_OP(cmd, 2, 0,  32, int,	    irq_cfg->user_irq_id); \
-	MC_RSP_OP(cmd, 2, 32, 32, int,	    type); \
 } while (0)
 
 /*                cmd, param, offset, width, type, arg_name */
@@ -125,8 +102,11 @@ do { \
 	MC_RSP_OP(cmd, 0, 0,  32, uint32_t, mask)
 
 /*                cmd, param, offset, width, type, arg_name */
-#define DPAIOP_CMD_GET_IRQ_STATUS(cmd, irq_index) \
-	MC_CMD_OP(cmd, 0, 32, 8,  uint8_t,  irq_index)
+#define DPAIOP_CMD_GET_IRQ_STATUS(cmd, irq_index, status) \
+do { \
+	MC_CMD_OP(cmd, 0, 0,  32, uint32_t, status);\
+	MC_CMD_OP(cmd, 0, 32, 8,  uint8_t,  irq_index);\
+} while (0)
 
 /*                cmd, param, offset, width, type, arg_name */
 #define DPAIOP_RSP_GET_IRQ_STATUS(cmd, status) \
@@ -141,18 +121,15 @@ do { \
 
 /*                cmd, param, offset, width, type,	arg_name */
 #define DPAIOP_RSP_GET_ATTRIBUTES(cmd, attr) \
-do { \
-	MC_RSP_OP(cmd, 0, 0,  32, int,	    attr->id);\
-	MC_RSP_OP(cmd, 1, 0,  16, uint16_t, attr->version.major);\
-	MC_RSP_OP(cmd, 1, 16, 16, uint16_t, attr->version.minor);\
-} while (0)
+	MC_RSP_OP(cmd, 0, 0,  32, int,	    (attr)->id)
 
 /*                cmd, param, offset, width, type, arg_name */
 #define DPAIOP_CMD_LOAD(cmd, cfg) \
 do { \
-	MC_CMD_OP(cmd, 0, 0,  32, uint32_t, cfg->img_size); \
-	MC_CMD_OP(cmd, 1, 0,  64, uint64_t, cfg->img_iova); \
-	MC_CMD_OP(cmd, 2, 0,  64, uint64_t, cfg->options); \
+	MC_CMD_OP(cmd, 0, 0,  32, uint32_t, (cfg)->img_size); \
+	MC_CMD_OP(cmd, 0, 32,  8,  uint8_t, (cfg)->tpc); \
+	MC_CMD_OP(cmd, 1, 0,  64, uint64_t, (cfg)->img_iova); \
+	MC_CMD_OP(cmd, 2, 0,  64, uint64_t, (cfg)->options); \
 } while (0)
 
 /*                cmd, param, offset, width, type, arg_name */
@@ -184,4 +161,12 @@ do { \
 #define DPAIOP_RSP_GET_TIME_OF_DAY(cmd, time_of_day) \
 	MC_RSP_OP(cmd, 0, 0,  64, uint64_t, time_of_day)
 
+/*                cmd, param, offset, width, type,      arg_name */
+#define DPAIOP_RSP_GET_API_VERSION(cmd, major, minor) \
+do { \
+	MC_RSP_OP(cmd, 0, 0,  16, uint16_t, major);\
+	MC_RSP_OP(cmd, 0, 16, 16, uint16_t, minor);\
+} while (0)
+
 #endif /* _FSL_DPAIOP_CMD_H */
+

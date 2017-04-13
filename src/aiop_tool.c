@@ -237,8 +237,6 @@ perform_aiop_get_status(aiopt_handle_t handle, aiopt_conf_t *conf)
 
 	if (ret == AIOPT_SUCCESS) {
 		AIOPT_PRINT("AIOP Tile Status:\n");
-		AIOPT_PRINT("\t Major Version: %d, Minor Version: %d\n",
-			status.minor_v, status.major_v);
 		AIOPT_PRINT("\t Service Layer:- Major Version: %d,"
 			" Minor Version: "
 			"%d, Revision: %d\n",
