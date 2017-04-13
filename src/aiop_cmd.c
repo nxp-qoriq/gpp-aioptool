@@ -616,7 +616,7 @@ usage(const char *tool_name, const char *error_str)
 	printf("\n");
 	printf("%s [sub-command] [arguments]\n",
 		bin_name ? basename(bin_name) : "NULL");
-	printf("Version: %s.%s, Comaptible MC Version: %s\n\n",
+	printf("Version: %s.%s, Compatible MC Version: %s\n\n",
 		AIOPT_MAJ_VER, AIOPT_MIN_VER, COMPAT_MC_VER);
 	printf("Following are valid [sub-commands]:\n");
 	printf("  help:   Prints help content for the binary.\n");
