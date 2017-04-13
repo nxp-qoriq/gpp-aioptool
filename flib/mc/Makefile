@@ -7,21 +7,7 @@ TARGET=	libmcflib.a
 
 CFLAGS= -I$(PWD) -W -Wall -Wshadow -Wstrict-prototypes
 
-SOURCES=dprc.c \
-	dpaiop.c \
-	dpdcei.c \
-	dpdmai.c \
-	dpmac.c \
-	dpmcp.c \
-	dpbp.c \
-	dpio.c \
-	dpni.c \
-	dpsw.c \
-	dpci.c \
-	dpcon.c \
-	dpseci.c \
-	dpmng.c \
-	dpdmux.c \
+SOURCES=dpaiop.c \
 	mc_sys.c
 
 OBJECTS=$(SOURCES:.c=.o)
