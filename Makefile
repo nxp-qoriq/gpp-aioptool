@@ -8,10 +8,12 @@ $(info "DESTDIR=$(DESTDIR)")
 CROSS_COMPILE ?=
 $(info "CROSS_COMPILE=$(CROSS_COMPILE)")
 
-ARCH ?= aarch64
+ARCH = aarch64
 $(info "ARCH=$(ARCH)")
 
-CC ?= $(CROSS_COMPILE)gcc
+CC=$(CROSS_COMPILE)gcc
+LD=${CROSS_COMPILE}ld
+AR=${CROSS_COMPILE}ar
 
 # PATHS
 SRCDIR	= src
