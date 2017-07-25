@@ -468,13 +468,13 @@ get_container_from_env(void)
  *
  * @param [in] argc Count of Command line arguments, as available in main
  * @param [in] argv Array of command line arguments, as available in main
- * @param [in] invalid_args string of option characters which are not expected
+ * @param [in] valid_args string of option characters which are not expected
  *             by caller.
  *
  * @return AIOPT_SUCCESS if parsing was successful, else AIOPT_FAILURE
  */
 static int
-generic_cmd_hndlr(int argc, char **argv, char *invalid_args)
+generic_cmd_hndlr(int argc, char **argv, char *valid_args)
 {
 	int ret = AIOPT_SUCCESS;
 	int opt;
@@ -502,7 +502,7 @@ generic_cmd_hndlr(int argc, char **argv, char *invalid_args)
 
 		switch (opt) {
 		case 'g':
-			ret = check_if_valid_arg(invalid_args,'g');
+			ret = check_if_valid_arg(valid_args,'g');
 			if (ret != AIOPT_SUCCESS) {
 				AIOPT_ERR("Invalid arg (%c) provided\n", 'g');
 				break;
@@ -514,7 +514,7 @@ generic_cmd_hndlr(int argc, char **argv, char *invalid_args)
 					gvars.container_name);
 			break;
 		case 'f':
-			ret = check_if_valid_arg(invalid_args,'f');
+			ret = check_if_valid_arg(valid_args,'f');
 			if (ret != AIOPT_SUCCESS) {
 				AIOPT_ERR("Invalid arg (%c) provided\n", 'f');
 				break;
@@ -527,7 +527,7 @@ generic_cmd_hndlr(int argc, char **argv, char *invalid_args)
 			}
 			break;
 		case 'a':
-			ret = check_if_valid_arg(invalid_args,'a');
+			ret = check_if_valid_arg(valid_args,'a');
 			if (ret != AIOPT_SUCCESS) {
 				AIOPT_ERR("Invalid arg (%c) provided\n", 'a');
 				break;
@@ -540,7 +540,7 @@ generic_cmd_hndlr(int argc, char **argv, char *invalid_args)
 			}
 			break;
 		case 'r':
-			ret = check_if_valid_arg(invalid_args,'r');
+			ret = check_if_valid_arg(valid_args,'r');
 			if (ret != AIOPT_SUCCESS) {
 				AIOPT_ERR("Invalid arg (%c) provided\n", 'r');
 				break;
@@ -550,7 +550,7 @@ generic_cmd_hndlr(int argc, char **argv, char *invalid_args)
 			reset_flag_from_args();
 			break;
 		case 't':
-			ret = check_if_valid_arg(invalid_args,'t');
+			ret = check_if_valid_arg(valid_args,'t');
 			if (ret != AIOPT_SUCCESS) {
 				AIOPT_ERR("Invalid arg (%c) provided\n", 't');
 				break;
@@ -560,7 +560,7 @@ generic_cmd_hndlr(int argc, char **argv, char *invalid_args)
 			timeofday_from_args(optarg);
 			break;
 		case 'd':
-			ret = check_if_valid_arg(invalid_args,'d');
+			ret = check_if_valid_arg(valid_args,'d');
 			if (ret != AIOPT_SUCCESS) {
 				AIOPT_ERR("Invalid arg (%c) provided\n", 'd');
 				break;
@@ -570,7 +570,7 @@ generic_cmd_hndlr(int argc, char **argv, char *invalid_args)
 			debug_flag_from_args();
 			break;
 		case 'v':
-			ret = check_if_valid_arg(invalid_args,'v');
+			ret = check_if_valid_arg(valid_args,'v');
 			if (ret != AIOPT_SUCCESS) {
 				AIOPT_ERR("Invalid arg (%c) provided\n", 'v');
 				break;
