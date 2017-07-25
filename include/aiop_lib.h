@@ -159,11 +159,12 @@ int aiopt_deinit(aiopt_handle_t obj);
  * @param [in] handle aiopt_handle_t type valid object
  * @param [in] ifile AIOP Image file name, with path
  * @param [in] reset Flag to state if reset is to be done before load operation
+ * @param [in] tpc threads per AIOP core configuration
  *
  * @return AIOPT_SUCCESS or AIOPT_FAILURE
  */
 int aiopt_load(aiopt_handle_t handle, const char *ifile,
-			const char *afile, short int reset);
+	       const char *afile, short int reset, unsigned short int tpc);
 
 /*
  * @brief

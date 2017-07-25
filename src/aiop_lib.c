@@ -633,7 +633,7 @@ get_aiop_args_fd(const char *afile, size_t *file_sz)
 static int
 perform_dpaiop_load(aiopt_obj_t *obj, void *addr, size_t filesize,
 			void *args_addr, size_t args_filesize,
-			short int reset)
+			short int reset, unsigned short int tpc)
 {
 	int ret, result;
 	unsigned short int *dpaiop_token;
@@ -668,6 +668,7 @@ perform_dpaiop_load(aiopt_obj_t *obj, void *addr, size_t filesize,
 	load_cfg.img_iova = (uint64_t)addr;
 	load_cfg.img_size = filesize;
 	load_cfg.options = 0;
+	load_cfg.tpc = tpc;
 
 	if (reset) {
 		/* Performing Reset before load */
@@ -1118,11 +1119,14 @@ aiopt_reset(aiopt_handle_t handle)
  * @param [in] ifile AIOP Image file name, with path
  * @param [in] afile AIOP Commandline arguments file name, with path
  * @param [in] reset Flag to state if reset is to be done before load operation
+ * @param [in] tpc for threads per AIOP core
  *
  * @return AIOPT_SUCCESS or AIOPT_FAILURE
  */
 int
-aiopt_load(aiopt_handle_t handle, const char *ifile, const char *afile, short int reset)
+aiopt_load(aiopt_handle_t handle, const char *ifile,
+	   const char *afile, short int reset,
+	   unsigned short int tpc)
 {
 	int ret, fd;
 	size_t filesize = 0;
@@ -1218,7 +1222,8 @@ aiopt_load(aiopt_handle_t handle, const char *ifile, const char *afile, short in
 		AIOPT_LIB_INFO("DMA Map of allocated memory (%p) successful for args.\n", args_addr);
 	}
 
-	ret = perform_dpaiop_load(obj, addr, filesize, args_addr, args_filesize, reset);
+	ret = perform_dpaiop_load(obj, addr, filesize, args_addr,
+				  args_filesize, reset, tpc);
 	if (ret != AIOPT_SUCCESS) {
 		AIOPT_DEBUG("Error in performing aiop load.\n");
 		/* Fall through to err_cleanup */

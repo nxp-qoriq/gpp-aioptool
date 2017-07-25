@@ -72,6 +72,18 @@
  */
 #define MAX_PATH_LEN		256 /**< Max file path length >*/
 
+/** @def MAX_THREAD_PER_CORE
+ * Maximum number of threads per core for AIOP.
+ * This is extracted from MC flib value (dpaiop_load_cfg).
+ * Valid values are 1, 2, 4, 8, 16.
+ */
+#define MAX_THREAD_PER_CORE	16
+
+/** @def DEFAULT_THREAD_PER_CORE
+ * Default value of threads per AIOP core.
+ */
+#define DEFAULT_THREAD_PER_CORE	1
+
 /* @def CONTAINER_ENV
  * @brief Value to identify if container being used is default, env or user
  * defined.
@@ -117,6 +129,10 @@ struct global_args {
  	*/
 	short int args_file_flag;
 	char args_file[MAX_PATH_LEN]; /* TODO Make it dynamic allocation */
+
+	/* Threads per AIOP Core (tpc) to deploy */
+	short int tpc_flag;
+	unsigned short int tpc;
 
 	/* Name of the container containing dpaiop object. This would be updated
 	 * either through user provided value (-g argument), or environment 

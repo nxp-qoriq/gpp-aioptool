@@ -70,6 +70,8 @@ struct aiop_tool_conf {
 	unsigned short int reset_flag; /**< Reset option for Load command >*/
 	unsigned short int debug_flag; /**< DEBUG Output, DEBUG/DEV >*/
 	unsigned short int verbose_flag; /**< verbose Output, INFO >*/
+	unsigned short int tpc; /**< threads per AIOP core >*/
+	unsigned short int tpc_flag; /**< Enabled if tpc provided by user >*/
 	uint64_t	tod; /**< Time of Day, for settod >*/
 };
 

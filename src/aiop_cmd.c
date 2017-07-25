@@ -114,12 +114,14 @@ dump_cmdline_args(void)
 		"    Image File: %s\n"
 		"    Args File: %s\n"
 		"    Time of Day: %lu\n"
+		"    Threads per core: %u\n"
 		"    Reset Flag: %s\n"
 		"    Debug: %s\n",
 		gvars.container_name ? gvars.container_name : NULL,
 		gvars.image_file ? gvars.image_file : NULL,
 		gvars.args_file,
 		gvars.tod_val,
+		gvars.tpc_flag ? gvars.tpc : DEFAULT_THREAD_PER_CORE,
 		gvars.reset_flag ? "Yes" : "No",
 		gvars.debug_flag ? "Yes" : "No");
 	if (gvars.container_name_flag > 0 &&
@@ -317,6 +319,34 @@ error_out:
 	return AIOPT_FAILURE;
 }
 
+/*
+ * @brief
+ * Helper to extract thread per core value against argument -c
+ *
+ * @param tpc_value string containing thread per core value from cmd line
+ * @return void
+ * 	   If invalid argument is provided, thread per core is assumed as
+ *	   default.
+ */
+static void inline
+thread_per_core_from_args(const char *tpc_value)
+{
+	int tpc;
+
+	if (tpc_value) {
+		/* atoi would simply return the valid value from first set of
+		 * valid characters which are integers. It would not report
+		 * any error.
+		 */
+		tpc = atoi(tpc_value);
+		if (tpc <= 0 || tpc > MAX_THREAD_PER_CORE)
+			tpc = DEFAULT_THREAD_PER_CORE;
+	}
+
+	AIOPT_DEV("Setting thread per AIOP core to: %d\n", tpc);
+	gvars.tpc = tpc;
+	gvars.tpc_flag = TRUE;
+}
 
 /*
  * @brief
@@ -478,7 +508,7 @@ generic_cmd_hndlr(int argc, char **argv, char *valid_args)
 {
 	int ret = AIOPT_SUCCESS;
 	int opt;
-	char *opt_str = "+g:f:a:t:rdv";
+	char *opt_str = "+g:f:a:t:rdvc:";
 
 	static struct option longopts[] = {
 		{"container", required_argument, NULL, 'g'},
@@ -488,6 +518,7 @@ generic_cmd_hndlr(int argc, char **argv, char *valid_args)
 		{"timeofday", required_argument, NULL, 't'},
 		{"debug", no_argument, NULL, 'd'},
 		{"verbose", no_argument, NULL, 'v'},
+		{"threadpercore", required_argument, NULL, 'c'},
 		{NULL, 0, NULL, 0}
 	};
 
@@ -579,6 +610,16 @@ generic_cmd_hndlr(int argc, char **argv, char *valid_args)
 			AIOPT_DEV("Provided with 'd' -%s-\n", optarg);
 			verbose_flag_from_args();
 			break;
+		case 'c':
+			ret = check_if_valid_arg(valid_args,'c');
+			if (ret != AIOPT_SUCCESS) {
+				AIOPT_ERR("Invalid arg (%c) provided\n", 'c');
+				break;
+			}
+
+			AIOPT_DEV("Provided with 'd' -%s-\n", optarg);
+			thread_per_core_from_args(optarg);
+			break;
 		case '?':
 		default:
 			AIOPT_ERR("Incorrect or Incomplete args.\n");
@@ -656,11 +697,16 @@ usage(const char *tool_name, const char *error_str)
 	printf("  load:\n");
 	printf("    -f <AIOP Image Path> Mandatory: Path of a valid AIOP \n");
 	printf("                         image file.\n");
+	printf("                         Also: --file\n");
 	printf("    -a <AIOP Args Path>  Optional: Path of a valid file \n");
 	printf("                         containing AIOP command-line argument data\n");
+	printf("                         Also: --args-file\n");
 	printf("    -r                   Optional: Reset AIOP tile before\n");
 	printf("                         performing load. If not provided,\n");
 	printf("                         reset would not be done\n");
+	printf("                         Also: --reset\n");
+	printf("    -c                   Optional: Threads per AIOP core to execute\n");
+	printf("                         Also: --threadpercore\n");
 	printf("  reset:\n");
 	printf("                         No mandatory arguments.\n");
 	printf("  gettod:\n");
@@ -669,13 +715,17 @@ usage(const char *tool_name, const char *error_str)
 	printf("    -t <Time since Epoch>\n");
 	printf("                         Mandatory: Time, in milliseconds\n");
 	printf("                         provided as string\n");
+	printf("                         Also: --timeofday\n");
 	printf("\n");
 	printf("Arguments valid for all sub-commands:\n");
 	printf("    -g <Container name>  Optional: Name of the container\n");
 	printf("                         containing the dpaiop object.\n");
+	printf("                         Also: --container\n");
 	printf("    -v                   Optional: Enable verbose output.\n");
+	printf("                         Also: --verbose\n");
 	printf("    -d                   Optional: Enable debug output.\n");
 	printf("                         This would also enable -v.\n");
+	printf("                         Also: --debug\n");
 	printf("\n");
 	printf("Container Name can be:\n");
 	printf("    1. Provided along with sub-command using '-g' option.\n");
@@ -797,7 +847,7 @@ int
 load_cmd_hndlr(int argc, char **argv)
 {
 	int ret = AIOPT_SUCCESS;
-	char *valid_args = "gafrdv";
+	char *valid_args = "gafrdvc";
 
 	AIOPT_DEBUG("Load Cmd: argc=%d\n", argc);
 

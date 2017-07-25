@@ -129,6 +129,10 @@ run_test 23 test_load "--file $AIOP_FILE --container $DPRC -r" 1
 run_test 24 test_load "--reset --debug" 0
 run_test 25 test_load "-g $DPRC --time 1 --reset --file $AIOPF_FILE" 0
 run_test 26 test_load "-g $DPRC --time 1 -r -f $AIOPF_FILE --debug" 0
+run_test 27 test_load "-g $DPRC -c 16 -d" 0
+run_test 28 test_load "-g $DPRC -f $AIOP_FILE -c 16 -d" 1
+run_test 29 test_load "-g $DPRC -f $AIOP_FILE -c 0 -d" 1
+run_test 30 test_load "-g $DPRC -f $AIOP_FILE --threadpercore 8 -d" 1
 
 
 ### Reset Test
