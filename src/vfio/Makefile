@@ -6,9 +6,9 @@ AR=${CROSS_COMPILE}ar
 
 TARGET=	libvfio.a
 
-CFLAGS= -I$(PWD) -W -Wall -Wshadow -Wstrict-prototypes
-CFLAGS+= -I$(KERNEL_PATH)
-CFLAGS+= -I../../$(PWD)/include
+CFLAGS = -I$(PWD) -W -Wall -Wshadow -Wstrict-prototypes
+CFLAGS += -I./
+CFLAGS += -I../../include
 
 SOURCES=fsl_vfio.c
 

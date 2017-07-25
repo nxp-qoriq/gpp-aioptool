@@ -12,35 +12,31 @@ Pre-requisite:
    object. This container can be statically defined (Static DPL) or dynamically
    created (using restool). This is NOT the container which is reserved by
    MC for interaction with AIOP.
-   There is a sample DPL file in samples folder.
 
 2. VFIO support in Linux Kernel
    This application assumes that the dpaiop device would be mapped into VFIO
    driver so as to use is feature of DMA Mapping and pushing SMMU addresses
-   for AIOP's access to use space memory
-   A sample script has been placed in samples folder which shows how to bind
-   the container (containing dpaiop device) to VFIO - assuming support for
-   vfio-fsl-mc driver in inbuilt.
+   for AIOP's access to use space memory.
+   This application assumes that the resource container (DPRC) is VFIO
+   mapped before being used. Please refer to `restool` application for
+   creating/destroying resource containers (DPRC).
 
 3. Valid AIOP Image for loading
 
 Build:
 -----
 
-1. Export KERNEL_PATH environment variable.
-   VFIO search for uapi/linux/vfio.h file.
-
-2. Update the CROSS_COMPILER with appropriate path to toolchain binaries.
+1. Update the CROSS_COMPILER with appropriate path to toolchain binaries.
    Update CFLAGS if required, for example, for adding debug info
 
-3. $ make clean
+2. $ make clean
    $ make
    OR,
    $ make install # would perform make and put binary in BINDIR
 
-4. 'aiop_tool' binary would be available in bin folder.
+3. 'aiop_tool' binary would be available in bin folder.
 
-5. $ make install DESTDIR=<Path>
+4. $ make install DESTDIR=<Path>
    to place the binary in <Path>/usr/bin
 
 Run:

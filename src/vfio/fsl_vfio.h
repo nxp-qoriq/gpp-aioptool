@@ -50,7 +50,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <libgen.h>
-#include <include/uapi/linux/vfio.h>
+#include <linux/vfio.h>
 
 /***** Macros ********/
 #define VFIO_PATH_MAX		100

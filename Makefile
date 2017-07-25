@@ -1,6 +1,4 @@
 top_builddir=$(PWD)
-KERNEL_PATH ?=
-$(info "KERNEL_PATH=$(KERNEL_PATH)")
 
 DESTDIR ?=
 $(info "DESTDIR=$(DESTDIR)")
@@ -30,7 +28,6 @@ CFLAGS += -I$(top_builddir)/include
 CFLAGS += -I$(top_builddir)/src
 CFLAGS += -I$(top_builddir)/src/vfio
 CFLAGS += -I$(top_builddir)/flib/mc
-CFLAGS += -I$(KERNEL_PATH)
 
 #Flags passed on make command line
 CFLAGS += $(CMDFLAGS)
