@@ -82,7 +82,7 @@
 /** @def DEFAULT_THREAD_PER_CORE
  * Default value of threads per AIOP core.
  */
-#define DEFAULT_THREAD_PER_CORE	1
+#define DEFAULT_THREAD_PER_CORE	0
 
 /* @def CONTAINER_ENV
  * @brief Value to identify if container being used is default, env or user
