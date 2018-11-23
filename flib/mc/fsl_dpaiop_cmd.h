@@ -1,4 +1,5 @@
 /* Copyright 2013-2016 Freescale Semiconductor Inc.
+ * Copyright 2018 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -59,6 +60,8 @@
 #define DPAIOP_CMDID_GET_STATE                  0x2831
 #define DPAIOP_CMDID_SET_TIME_OF_DAY            0x2841
 #define DPAIOP_CMDID_GET_TIME_OF_DAY            0x2851
+
+#define DPAIOP_CMDID_SET_RESETABLE              0x2861
 
 /*                cmd, param, offset, width, type, arg_name */
 #define DPAIOP_CMD_OPEN(cmd, dpaiop_id) \
@@ -167,6 +170,9 @@ do { \
 	MC_RSP_OP(cmd, 0, 0,  16, uint16_t, major);\
 	MC_RSP_OP(cmd, 0, 16, 16, uint16_t, minor);\
 } while (0)
+
+#define DPAIOP_CMD_SET_RESETABLE(cmd, enable) \
+	MC_CMD_OP(cmd, 0, 0, 8, uint8_t, enable)
 
 #endif /* _FSL_DPAIOP_CMD_H */
 

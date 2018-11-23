@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015 Freescale Semiconductor, Inc. All rights reserved.
+ * Copyright 2018 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -670,6 +671,15 @@ perform_dpaiop_load(aiopt_obj_t *obj, void *addr, size_t filesize,
 	load_cfg.options = 0;
 	load_cfg.tpc = tpc;
 
+	AIOPT_DEBUG("dpaiop_set_resetable(true)\n");
+	result = dpaiop_set_resetable(dpaiop, 0, *dpaiop_token, 1);
+	if (result) {
+		/* ignore the error since set_resetable may not be supported */
+		AIOPT_DEBUG("MC API dpaiop_set_resetable(true) failed. (err=%d)\n", result);
+	} else {
+		AIOPT_LIB_INFO("MC API dpaiop_set_resetable(true) successful. (err=%d)\n", result);
+	}
+
 	if (reset) {
 		/* Performing Reset before load */
 		AIOPT_DEV("Calling dpaiop_reset before dpaiop_load.\n");
@@ -686,6 +696,7 @@ perform_dpaiop_load(aiopt_obj_t *obj, void *addr, size_t filesize,
 			AIOPT_LIB_INFO("AIOP Tile Reset done. (err=%d)\n", ret);
 		}
 	}
+
 	AIOPT_DEBUG("dpaiop_load call: iova=%p, size=%u\n",
 			(void *)load_cfg.img_iova, load_cfg.img_size);
 
@@ -714,6 +725,15 @@ perform_dpaiop_load(aiopt_obj_t *obj, void *addr, size_t filesize,
 					ret);
 		}
 		/* Irrespective of error or success, we have to cleanup */
+	}
+
+	AIOPT_DEBUG("dpaiop_set_resetable(false)\n");
+	result = dpaiop_set_resetable(dpaiop, 0, *dpaiop_token, 0);
+	if (result) {
+		/* ignore the error since set_resetable may not be supported */
+		AIOPT_DEBUG("MC API dpaiop_set_resetable(false) failed. (err=%d)\n", result);
+	} else {
+		AIOPT_LIB_INFO("MC API dpaiop_set_resetable(false) successful. (err=%d)\n", result);
 	}
 
 	/* Closing the dpaiop_device, after releasing memory allocated for
@@ -1084,11 +1104,29 @@ aiopt_reset(aiopt_handle_t handle)
 	}
 	AIOPT_DEBUG("Opened AIOP device. (Token=%d)\n", *dpaiop_token);
 
+	AIOPT_DEBUG("dpaiop_set_resetable(true)\n");
+	ret = dpaiop_set_resetable(dpaiop, 0, *dpaiop_token, 1);
+	if (ret) {
+		/* ignore the error since set_resetable may not be supported */
+		AIOPT_DEBUG("MC API dpaiop_set_resetable(true) failed. (err=%d)\n", ret);
+	} else {
+		AIOPT_LIB_INFO("MC API dpaiop_set_resetable(true) successful. (err=%d)\n", ret);
+	}
+
 	ret = dpaiop_reset(dpaiop, 0, *dpaiop_token);
 	if (ret) {
 		AIOPT_DEBUG("Unable to reset the AIOP tile. (err=%d)\n", ret);
 	} else {
 		AIOPT_LIB_INFO("AIOP Tile Reset successful.\n");
+	}
+
+	AIOPT_DEBUG("dpaiop_set_resetable(false)\n");
+	ret = dpaiop_set_resetable(dpaiop, 0, *dpaiop_token, 0);
+	if (ret) {
+		/* ignore the error since set_resetable may not be supported */
+		AIOPT_DEBUG("MC API dpaiop_set_resetable(false) failed. (err=%d)\n", ret);
+	} else {
+		AIOPT_LIB_INFO("MC API dpaiop_set_resetable(false) successful. (err=%d)\n", ret);
 	}
 
 	/* Closing the dpaiop_device */

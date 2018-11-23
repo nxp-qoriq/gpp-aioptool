@@ -1,4 +1,5 @@
 /* Copyright 2013-2016 Freescale Semiconductor Inc.
+ * Copyright 2018 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -431,4 +432,22 @@ int dpaiop_get_api_version(struct fsl_mc_io *mc_io,
 	DPAIOP_RSP_GET_API_VERSION(cmd, *major_ver, *minor_ver);
 
 	return 0;
+}
+
+int dpaiop_set_resetable(struct fsl_mc_io *mc_io,
+			 uint32_t cmd_flags,
+			 uint16_t token,
+			 int enable)
+{
+	struct dpaiop_cmd_set_resetable *cmd_params;
+	struct mc_command cmd = { 0 };
+	int err;
+
+	cmd.header = mc_encode_cmd_header(DPAIOP_CMDID_SET_RESETABLE,
+					  cmd_flags,
+					  token);
+
+	DPAIOP_CMD_SET_RESETABLE(cmd, enable);
+
+	return mc_send_command(mc_io, &cmd);
 }

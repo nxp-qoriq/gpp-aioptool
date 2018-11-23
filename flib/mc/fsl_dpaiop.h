@@ -1,4 +1,5 @@
 /* Copyright 2013-2016 Freescale Semiconductor Inc.
+ * Copyright 2018 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -461,5 +462,20 @@ int dpaiop_get_api_version(struct fsl_mc_io *mc_io,
 			   uint32_t cmd_flags,
 			   uint16_t *major_ver,
 			   uint16_t *minor_ver);
+
+/**
+ * dpaiop_set_resetable() - enable/disable dpaiop reset capability
+ * @mc_io:	Pointer to MC portal's I/O object
+ * @cmd_flags:	Command flags; one or more of 'MC_CMD_FLAG_'
+ * @token:		Token of DPAIOP object
+ * @enable:		Set to 1 to enable reset capability, 0 to disable
+ *
+ * If reset capability is disabled the object will ignore the reset command.
+ * Return:  '0' on Success; Error code otherwise.
+ */
+int dpaiop_set_resetable(struct fsl_mc_io *mc_io,
+			 uint32_t cmd_flags,
+			 uint16_t token,
+			 int enable);
 
 #endif /* __FSL_DPAIOP_H */

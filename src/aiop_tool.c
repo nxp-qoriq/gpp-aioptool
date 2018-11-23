@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015 Freescale Semiconductor, Inc. All rights reserved.
+ * Copyright 2018 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -39,7 +40,6 @@
 #include <stdint.h>
 #include <errno.h>
 #include <getopt.h>
-#include <sys/select.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -212,7 +212,6 @@ perform_aiop_load(aiopt_handle_t handle, aiopt_conf_t *conf)
 			conf->image_file, conf->args_file, ret);
 	}
 
-	select(1, NULL, NULL, NULL, NULL);
 	AIOPT_DEV("Exiting (%d)\n", ret);
 	return ret;
 }
