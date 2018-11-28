@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015 Freescale Semiconductor, Inc. All rights reserved.
+ * Copyright 2018 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -36,10 +37,10 @@
 #define AIOPT_TOOL_H
 
 /* TODO This should be auto-extracted just like ODP is doing */
-#define AIOPT_MAJ_VER		"2"
+#define AIOPT_MAJ_VER		"3"
 #define AIOPT_MIN_VER		"0"
 
-#define COMPAT_MC_VER		"10.1.3"
+#define COMPAT_MC_VER		"10.13.0"
 
 /* General success/failure Macros */
 #define AIOPT_SUCCESS	0	/**< Success of a Method/Function >*/
